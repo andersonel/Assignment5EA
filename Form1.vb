@@ -3,13 +3,15 @@
 'This program aloows member to be added to 
 '11/28/2022
 Imports System.Diagnostics.Eventing.Reader
+Imports System.IO
 
 Public Class frmAssignment5
+    Dim temp_directory = "C:\temp\"
     Dim strMembersfile As String
     Dim Count As Integer
     Private Sub frmAssignment5_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' loads name on selected file
-        strMembersfile = "Youth_Members-2.txt"
+        strMembersfile = temp_directory & "Youth_Members-2.txt"
         lstMembers.DataSource = IO.File.ReadAllLines(strMembersfile)
         lstMembers.SelectedItem = Nothing
         Count = lstMembers.Items.Count()
@@ -38,6 +40,9 @@ Public Class frmAssignment5
     Private Sub AddMemberToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AddMemberToolStripMenuItem.Click
         ' function gets a member name and will not come back until it gets a good one
         Dim Newmember As String = input_member()
+        If Newmember = String.Empty Then
+            Return
+        End If
         Dim SW As IO.StreamWriter
         SW = IO.File.AppendText(strMembersfile)
         ' Seperating these lines allows the code to work right 
@@ -58,7 +63,10 @@ Public Class frmAssignment5
             If new_member = " " Then
                 MessageBox.Show("Please enter a name")
             ElseIf new_member = String.Empty Then
-                MessageBox.Show("Please enter a REAL name")
+                ' Turns out that the Cancel button returns String.Empty
+                ' so just make that valid here, and check for empty string from the calling event
+                valid_member = True
+                'MessageBox.Show("Please enter a REAL name")
             Else
                 valid_member = True
             End If
@@ -97,16 +105,22 @@ Public Class frmAssignment5
         If strnewfile = " " Then
             MessageBox.Show("Enter the new file's name")
         ElseIf strnewfile = String.Empty Then
-            MessageBox.Show("Enter the new file's name")
+            ' when user clicks Cancel, we get String.Empty
+            '            MessageBox.Show("Enter the new file's name")
+            Exit Sub 'yeah this is a bit crap. It should work though.
+            ' Better would be to reuse the input_member function
+            ' you would rename it to input_text and pass in the right prompts
+            ' I am sure there is a proper way to do all this, with bits of .NET, but you certainly haven't been shown what that might be.
+            ' This is just me making it up as I go along, with my own code that is vaguely usefulish.
         End If
         'Same issue as last IF statement, how to return to Inputbox 
-        strMembersfile = strnewfile & ".txt"
+        strMembersfile = temp_directory & strnewfile & ".txt"
         ' if statement to check if it exisit and if if doesn't create it 
         If Not IO.File.Exists(strMembersfile) Then
             Dim SW As IO.StreamWriter = IO.File.CreateText(strMembersfile)
             SW.Close()
         End If
-
+        MsgBox("Created file " & strMembersfile) ' because they won't necessarily know where it is, or what is going on
         refreshlist()
     End Sub
 End Class
